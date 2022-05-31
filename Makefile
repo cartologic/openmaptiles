@@ -385,7 +385,7 @@ psql: start-db-nowait
 
 # Special cache handling for Docker Toolbox on Windows
 ifeq ($(MSYSTEM),MINGW64)
-  DC_CONFIG_CACHE := -f docker compose.yml -f docker compose-$(MSYSTEM).yml
+  DC_CONFIG_CACHE := -f docker-compose.yml -f docker-compose-$(MSYSTEM).yml
   DC_OPTS_CACHE := $(filter-out --user=%,$(DC_OPTS))
 else
   DC_OPTS_CACHE := $(DC_OPTS)
