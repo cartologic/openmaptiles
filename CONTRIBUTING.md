@@ -74,14 +74,14 @@ export area=north-america/us/indiana
 rm -fr data build cache
 make destroy-db
 make download-geofabrik area=$area
-docker-compose run --rm --user=$(id -u):$(id -g) openmaptiles-tools sh -c "wget -nv -O data/$area.osm.pbf http://download.geofabrik.de/$area-$(date --date="$(date +%Y-%m-15) -1 month" +'%y%m01').osm.pbf"
+docker compose run --rm --user=$(id -u):$(id -g) openmaptiles-tools sh -c "wget -nv -O data/$area.osm.pbf http://download.geofabrik.de/$area-$(date --date="$(date +%Y-%m-15) -1 month" +'%y%m01').osm.pbf"
 ./quickstart.sh $area
 cat << EOM
 
 # Update with the changes since a month+ ago
 
 EOM
-docker-compose run --rm --user=$(id -u):$(id -g) openmaptiles-tools sh -c "osmupdate --base-url=$(sed -n 's/ *\"replication_url\": //p' data/$area.repl.json) data/$area.osm.pbf data/changes.osc.gz"
+docker compose run --rm --user=$(id -u):$(id -g) openmaptiles-tools sh -c "osmupdate --base-url=$(sed -n 's/ *\"replication_url\": //p' data/$area.repl.json) data/$area.osm.pbf data/changes.osc.gz"
 make import-diff
 make generate-tiles-pg
 ) < /dev/null

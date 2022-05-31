@@ -9,7 +9,7 @@ SHELL         = /bin/bash
 # Layers definition and meta data
 TILESET_FILE := $(or $(TILESET_FILE),$(shell (. .env; echo $${TILESET_FILE})),openmaptiles.yaml)
 
-# Options to run with docker and docker-compose - ensure the container is destroyed on exit
+# Options to run with docker and docker compose - ensure the container is destroyed on exit
 # Containers run as the current user rather than root (so that created files are not root-owned)
 DC_OPTS ?= --rm --user=$(shell id -u):$(shell id -g)
 
@@ -23,13 +23,13 @@ export PPORT
 TPORT ?= 8080
 export TPORT
 
-# Allow a custom docker-compose project name
+# Allow a custom docker compose project name
 DC_PROJECT := $(or $(DC_PROJECT),$(shell (. .env; echo $${DC_PROJECT})))
 ifeq ($(DC_PROJECT),)
   DC_PROJECT := $(notdir $(shell pwd))
-  DOCKER_COMPOSE := docker-compose
+  DOCKER_COMPOSE := docker compose
 else
-  DOCKER_COMPOSE := docker-compose --project-name $(DC_PROJECT)
+  DOCKER_COMPOSE := docker compose --project-name $(DC_PROJECT)
 endif
 
 # Make some operations quieter (e.g. inside the test script)
@@ -194,8 +194,8 @@ Hints for developers:
 Hints for downloading & importing data:
   make list-geofabrik                  # list actual geofabrik OSM extracts for download
   make list-bbbike                     # list actual BBBike OSM extracts for download
-  make download area=albania           # download OSM data from any source       and create config file
-  make download-geofabrik area=albania # download OSM data from geofabrik.de     and create config file
+  make download area=gcc-states           # download OSM data from any source       and create config file
+  make download-geofabrik area=gcc-states # download OSM data from geofabrik.de     and create config file
   make download-osmfr area=asia/qatar  # download OSM data from openstreetmap.fr and create config file
   make download-bbbike area=Amsterdam  # download OSM data from bbbike.org       and create config file
   make import-data                     # Import data from OpenStreetMapData, Natural Earth and OSM Lake Labels.
@@ -385,7 +385,7 @@ psql: start-db-nowait
 
 # Special cache handling for Docker Toolbox on Windows
 ifeq ($(MSYSTEM),MINGW64)
-  DC_CONFIG_CACHE := -f docker-compose.yml -f docker-compose-$(MSYSTEM).yml
+  DC_CONFIG_CACHE := -f docker compose.yml -f docker compose-$(MSYSTEM).yml
   DC_OPTS_CACHE := $(filter-out --user=%,$(DC_OPTS))
 else
   DC_OPTS_CACHE := $(DC_OPTS)
@@ -567,9 +567,9 @@ else
 	@echo "Refreshing docker images... Use NO_REFRESH=1 to skip."
 ifneq ($(USE_PRELOADED_IMAGE),)
 	POSTGIS_IMAGE=openmaptiles/postgis-preloaded \
-		docker-compose pull --ignore-pull-failures $(QUIET_FLAG) openmaptiles-tools generate-vectortiles postgres
+		docker compose pull --ignore-pull-failures $(QUIET_FLAG) openmaptiles-tools generate-vectortiles postgres
 else
-	docker-compose pull --ignore-pull-failures $(QUIET_FLAG) openmaptiles-tools generate-vectortiles postgres import-data
+	docker compose pull --ignore-pull-failures $(QUIET_FLAG) openmaptiles-tools generate-vectortiles postgres import-data
 endif
 endif
 
@@ -594,7 +594,7 @@ test-perf-null: init-dirs
 
 .PHONY: build-test-pbf
 build-test-pbf: init-dirs
-	docker-compose run $(DC_OPTS) openmaptiles-tools /tileset/.github/workflows/build-test-data.sh
+	docker compose run $(DC_OPTS) openmaptiles-tools /tileset/.github/workflows/build-test-data.sh
 
 .PHONY: debug
 debug:  ## Use this target when developing Makefile itself to verify loaded environment variables

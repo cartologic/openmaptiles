@@ -24,7 +24,7 @@ set -o nounset
 # ./quickstart.sh africa osmfr
 # ./quickstart.sh alabama
 # ./quickstart.sh alaska
-# ./quickstart.sh albania
+# ./quickstart.sh gcc-states
 # ./quickstart.sh alberta
 # ./quickstart.sh alps
 # ./quickstart.sh europe/austria
@@ -47,7 +47,7 @@ fi
 
 if [ $# -eq 0 ]; then
   #  default test area
-  export area=albania
+  export area=gcc-states
   echo "No parameter - set area=$area "
 else
   export area=$1
@@ -69,21 +69,21 @@ echo " "
 echo "====================================================================================="
 echo "                       Docker check & Download images                                "
 echo "-------------------------------------------------------------------------------------"
-echo "====> : Please check the Docker and docker-compose version!"
-echo "      : We are using docker-compose v2 file format!  see more at https://docs.docker.com/"
+echo "====> : Please check the Docker and docker compose version!"
+echo "      : We are using docker compose v2 file format!  see more at https://docs.docker.com/"
 echo "      : Minimum required Docker version: $MIN_DOCKER_VER+"
-echo "      : Minimum required docker-compose version: $MIN_COMPOSE_VER+"
+echo "      : Minimum required docker compose version: $MIN_COMPOSE_VER+"
 echo "      : See the .travis build for the currently supported versions."
 echo "      : Your docker system:"
 docker         --version
-docker-compose --version
+docker compose --version
 
 # based on: http://stackoverflow.com/questions/16989598/bash-comparing-version-numbers
 function version { echo "$@" | tr -d 'v' | tr -cs '0-9.' '.' | awk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'; }
 
-COMPOSE_VER=$(docker-compose version --short)
+COMPOSE_VER=$(docker compose version --short)
 if [ "$(version "$COMPOSE_VER")" -lt "$(version "$MIN_COMPOSE_VER")" ]; then
-  echo "ERR: Your Docker-compose version is known to have bugs, please update docker-compose!"
+  echo "ERR: Your docker compose version is known to have bugs, please update docker compose!"
   exit 1
 fi
 
@@ -116,7 +116,7 @@ echo "      : Started          : $STARTDATE "
 echo "      : Your bash version: $BASH_VERSION"
 echo "      : Your OS          : $OSTYPE"
 docker         --version
-docker-compose --version
+docker compose --version
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
     echo " "
@@ -199,7 +199,7 @@ if [[ "$USE_PRELOADED_IMAGE" == true ]]; then
   echo "      :   includes all data from the import-data image"
   echo "      :"
   echo "      : Use the --empty flag to start with an empty database:"
-  echo "      :   ./quickstart.sh --empty albania "
+  echo "      :   ./quickstart.sh --empty gcc-states "
   echo "      : If desired, you can manually import data by using these commands:"
   echo "      :   make destroy-db"
   echo "      :   make start-db"

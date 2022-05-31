@@ -88,5 +88,5 @@ cd data && rm ./*/*.tiles
 Finally run the command to read the tilelist and write the updated vector tiles in the existing MBtiles file.
 
 ```
-docker-compose run generate-changed-vectortiles
+docker compose run generate-changed-vectortiles
 ```

@@ -87,7 +87,7 @@ make
 ```
 
 You can execute the following manual steps (for better understanding)
-or use the provided `quickstart.sh` script to automatically download and import given area. If area is not given, albania will be imported.
+or use the provided `quickstart.sh` script to automatically download and import given area. If area is not given, gcc-states will be imported.
 
 ```
 ./quickstart.sh <area>
@@ -110,7 +110,7 @@ make import-data
 Download OpenStreetMap data extracts from any source like [Geofabrik](http://download.geofabrik.de/), and store the PBF file in the `./data` directory. To use a specific download source, use `download-geofabrik`, `download-bbbike`, or `download-osmfr`, or use `download` to make it auto-pick the area. You can use `area=planet` for the entire OSM dataset (very large).  Note that if you have more than one `data/*.osm.pbf` file, every `make` command will always require `area=...` parameter (or you can just `export area=...` first).
 
 ```bash
-make download area=albania
+make download area=gcc-states
 ```
 
 [Import OpenStreetMap data](https://github.com/openmaptiles/openmaptiles-tools/tree/master/docker/import-osm) with the mapping rules from
@@ -159,14 +159,14 @@ make clean                  # clean / remove existing build files
 make                        # generate build files
 make start-db               # start up the database container.
 make import-data            # Import external data from OpenStreetMapData, Natural Earth and OpenStreetMap Lake Labels.
-make download area=albania  # download albania .osm.pbf file -- can be skipped if a .osm.pbf file already existing
+make download area=gcc-states  # download gcc-states .osm.pbf file -- can be skipped if a .osm.pbf file already existing
 make import-osm             # import data into postgres
 make import-wikidata        # import Wikidata
 make import-sql             # create / import sql funtions 
 make generate-bbox-file     # compute data bbox -- not needed for the whole planet
 make generate-tiles-pg      # generate tiles
 ```
-Instead of calling `make download area=albania` you can add a .osm.pbf file in the `data` folder `openmaptiles/data/your_area_file.osm.pbf`
+Instead of calling `make download area=gcc-states` you can add a .osm.pbf file in the `data` folder `openmaptiles/data/your_area_file.osm.pbf`
 
 
 ## License

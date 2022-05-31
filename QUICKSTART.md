@@ -15,7 +15,7 @@
 * md5sum
 * docker         >=1.12.3
     * https://www.docker.com/products/overview
-* docker-compose >=1.7.1
+* docker compose >=1.7.1
     * https://docs.docker.com/compose/install/
 * disk space ( >= ~15Gb  )
     * for small extracts  >= ~15Gb
@@ -34,7 +34,7 @@
 
 Important:  The ./quickstart.sh is for small extracts - not optimal for a Planet rendering !!
 
-### First experiment - with `albania` ( small extracts! )
+### First experiment - with `gcc-states` ( small extracts! )
 
 ```bash
 git clone https://github.com/openmaptiles/openmaptiles.git
@@ -67,7 +67,7 @@ This is generating `.mbtiles` for your area :  [ MIN_ZOOM: "0"  - MAX_ZOOM: "7" 
 ./quickstart.sh africa                       # Africa
 ./quickstart.sh alabama                      # Alabama, US
 ./quickstart.sh alaska                       # Alaska, US
-./quickstart.sh albania                      # Albania, Europe
+./quickstart.sh gcc-states                      # gcc-states, Europe
 ./quickstart.sh alberta                      # Alberta, Canada
 ./quickstart.sh alps                         # Alps, Europe
 ./quickstart.sh alsace                       # Alsace, France
@@ -373,7 +373,7 @@ make generate-bbox-file area=mydata
 ```
 
 ### Check postserve
-*  ` docker-compose up -d postserve`
+*  ` docker compose up -d postserve`
 and the generated maps are going to be available in browser on [localhost:8090/tiles/0/0/0.pbf](http://localhost:8090/tiles/0/0/0.pbf).
 
 ### Check tileserver
@@ -443,8 +443,8 @@ Hints for developers:
 Hints for downloading & importing data:
   make list-geofabrik                  # list actual geofabrik OSM extracts for download
   make list-bbbike                     # list actual BBBike OSM extracts for download
-  make download area=albania           # download OSM data from any source       and create config file
-  make download-geofabrik area=albania # download OSM data from geofabrik.de     and create config file
+  make download area=gcc-states           # download OSM data from any source       and create config file
+  make download-geofabrik area=gcc-states # download OSM data from geofabrik.de     and create config file
   make download-osmfr area=asia/qatar  # download OSM data from openstreetmap.fr and create config file
   make download-bbbike area=Amsterdam  # download OSM data from bbbike.org       and create config file
   make import-data                     # Import data from OpenStreetMapData, Natural Earth and OSM Lake Labels.
