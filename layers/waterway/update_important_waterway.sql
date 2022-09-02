@@ -18,28 +18,28 @@ CREATE TABLE IF NOT EXISTS osm_important_waterway_linestring (
     geometry geometry,
     name varchar,
     name_en varchar,
-    name_de varchar,
+    name_ar varchar,
     tags hstore
 );
 
 -- etldoc: osm_waterway_linestring ->  osm_important_waterway_linestring
-INSERT INTO osm_important_waterway_linestring (geometry, name, name_en, name_de, tags)
+INSERT INTO osm_important_waterway_linestring (geometry, name, name_en, name_ar, tags)
 SELECT (ST_Dump(geometry)).geom AS geometry,
        name,
        name_en,
-       name_de,
+       name_ar,
        tags
 FROM (
          SELECT ST_LineMerge(ST_Union(geometry)) AS geometry,
                 name,
                 name_en,
-                name_de,
+                name_ar,
                 slice_language_tags(tags) AS tags
          FROM osm_waterway_linestring
          WHERE name <> ''
            AND waterway = 'river'
            AND ST_IsValid(geometry)
-         GROUP BY name, name_en, name_de, slice_language_tags(tags)
+         GROUP BY name, name_en, name_ar, slice_language_tags(tags)
      ) AS waterway_union;
 CREATE INDEX IF NOT EXISTS osm_important_waterway_linestring_geometry_idx ON osm_important_waterway_linestring USING gist (geometry);
 
@@ -56,12 +56,12 @@ CREATE OR REPLACE FUNCTION insert_important_waterway_linestring_gen(update_id bi
 $$
 BEGIN
     -- etldoc: osm_important_waterway_linestring -> osm_important_waterway_linestring_gen_z11
-    INSERT INTO osm_important_waterway_linestring_gen_z11 (geometry, id, name, name_en, name_de, tags)
+    INSERT INTO osm_important_waterway_linestring_gen_z11 (geometry, id, name, name_en, name_ar, tags)
     SELECT ST_Simplify(geometry, ZRes(12)) AS geometry,
         id,
         name,
         name_en,
-        name_de,
+        name_ar,
         tags
     FROM osm_important_waterway_linestring
     WHERE
@@ -69,12 +69,12 @@ BEGIN
         ST_Length(geometry) > 1000;
 
     -- etldoc: osm_important_waterway_linestring_gen_z11 -> osm_important_waterway_linestring_gen_z10
-    INSERT INTO osm_important_waterway_linestring_gen_z10 (geometry, id, name, name_en, name_de, tags)
+    INSERT INTO osm_important_waterway_linestring_gen_z10 (geometry, id, name, name_en, name_ar, tags)
     SELECT ST_Simplify(geometry, ZRes(11)) AS geometry,
         id,
         name,
         name_en,
-        name_de,
+        name_ar,
         tags
     FROM osm_important_waterway_linestring_gen_z11
     WHERE
@@ -82,12 +82,12 @@ BEGIN
         ST_Length(geometry) > 4000;
 
     -- etldoc: osm_important_waterway_linestring_gen_z10 -> osm_important_waterway_linestring_gen_z9
-    INSERT INTO osm_important_waterway_linestring_gen_z9 (geometry, id, name, name_en, name_de, tags)
+    INSERT INTO osm_important_waterway_linestring_gen_z9 (geometry, id, name, name_en, name_ar, tags)
     SELECT ST_Simplify(geometry, ZRes(10)) AS geometry,
         id,
         name,
         name_en,
-        name_de,
+        name_ar,
         tags
     FROM osm_important_waterway_linestring_gen_z10
     WHERE
@@ -120,19 +120,19 @@ CREATE TABLE IF NOT EXISTS waterway_important.changes
     is_old boolean,
     name character varying,
     name_en character varying,
-    name_de character varying,
+    name_ar character varying,
     tags hstore
 );
 CREATE OR REPLACE FUNCTION waterway_important.store() RETURNS trigger AS
 $$
 BEGIN
     IF (tg_op IN ('DELETE', 'UPDATE')) AND OLD.name <> '' AND OLD.waterway = 'river' THEN
-        INSERT INTO waterway_important.changes(is_old, name, name_en, name_de, tags)
-        VALUES (TRUE, OLD.name, OLD.name_en, OLD.name_de, slice_language_tags(OLD.tags));
+        INSERT INTO waterway_important.changes(is_old, name, name_en, name_ar, tags)
+        VALUES (TRUE, OLD.name, OLD.name_en, OLD.name_ar, slice_language_tags(OLD.tags));
     END IF;
     IF (tg_op IN ('UPDATE', 'INSERT')) AND NEW.name <> '' AND NEW.waterway = 'river' THEN
-        INSERT INTO waterway_important.changes(is_old, name, name_en, name_de, tags)
-        VALUES (FALSE, NEW.name, NEW.name_en, NEW.name_de, slice_language_tags(NEW.tags));
+        INSERT INTO waterway_important.changes(is_old, name, name_en, name_ar, tags)
+        VALUES (FALSE, NEW.name, NEW.name_en, NEW.name_ar, slice_language_tags(NEW.tags));
     END IF;
     RETURN NULL;
 END;
@@ -163,10 +163,10 @@ BEGIN
 
     -- Compact the change history to keep only the first and last version, and then uniq version of row
     CREATE TEMP TABLE changes_compact AS
-    SELECT DISTINCT ON (name, name_en, name_de, tags)
+    SELECT DISTINCT ON (name, name_en, name_ar, tags)
         name,
         name_en,
-        name_de,
+        name_ar,
         tags
     FROM ((
               SELECT DISTINCT ON (osm_id) *
@@ -189,30 +189,30 @@ BEGIN
         USING changes_compact AS c
     WHERE w.name = c.name
       AND w.name_en IS NOT DISTINCT FROM c.name_en
-      AND w.name_de IS NOT DISTINCT FROM c.name_de
+      AND w.name_ar IS NOT DISTINCT FROM c.name_ar
       AND w.tags IS NOT DISTINCT FROM c.tags;
 
-    INSERT INTO osm_important_waterway_linestring (geometry, name, name_en, name_de, tags)
+    INSERT INTO osm_important_waterway_linestring (geometry, name, name_en, name_ar, tags)
     SELECT (ST_Dump(geometry)).geom AS geometry,
            name,
            name_en,
-           name_de,
+           name_ar,
            tags
     FROM (
              SELECT ST_LineMerge(ST_Union(geometry)) AS geometry,
                     w.name,
                     w.name_en,
-                    w.name_de,
+                    w.name_ar,
                     slice_language_tags(w.tags) AS tags
              FROM osm_waterway_linestring AS w
                       JOIN changes_compact AS c ON
                      w.name = c.name AND w.name_en IS NOT DISTINCT FROM c.name_en AND
-                     w.name_de IS NOT DISTINCT FROM c.name_de AND
+                     w.name_ar IS NOT DISTINCT FROM c.name_ar AND
                      slice_language_tags(w.tags) IS NOT DISTINCT FROM c.tags
              WHERE w.name <> ''
                AND w.waterway = 'river'
                AND ST_IsValid(geometry)
-             GROUP BY w.name, w.name_en, w.name_de, slice_language_tags(w.tags)
+             GROUP BY w.name, w.name_en, w.name_ar, slice_language_tags(w.tags)
          ) AS waterway_union;
 
     DROP TABLE changes_compact;
