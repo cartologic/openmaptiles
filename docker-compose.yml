@@ -3,6 +3,7 @@ version: "3"
 
 volumes:
   pgdata:
+  tileserverapp:
 
 networks:
   postgres:
