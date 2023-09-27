@@ -84,9 +84,9 @@ fi
 
 function docker_compose_command () {
     if $DOCKER_COMPOSE_HYPHEN; then
-      docker compose $@
-    else
       docker-compose $@
+    else
+      docker compose $@
     fi
 }
 
