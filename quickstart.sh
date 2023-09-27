@@ -76,7 +76,7 @@ echo "      : Minimum required docker compose version: $MIN_COMPOSE_VER+"
 echo "      : See the .travis build for the currently supported versions."
 echo "      : Your docker system:"
 
-if ! command -v docker-compose &> /dev/null; then
+if ! command -v docker compose &> /dev/null; then
   DOCKER_COMPOSE_HYPHEN=false
 else
   DOCKER_COMPOSE_HYPHEN=true
@@ -84,9 +84,9 @@ fi
 
 function docker_compose_command () {
     if $DOCKER_COMPOSE_HYPHEN; then
-      docker-compose $@
-    else
       docker compose $@
+    else
+      docker-compose $@
     fi
 }
 

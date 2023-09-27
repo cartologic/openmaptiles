@@ -27,7 +27,7 @@ STYLE_HEADER_FILE := style/style-header.json
 
 # Support newer `docker compose` syntax in addition to `docker-compose`
 
-ifeq (, $(shell which docker-compose))
+ifeq (, $(shell which docker compose))
   DOCKER_COMPOSE_COMMAND := docker compose
   $(info Using docker compose V2 (docker compose))
 else
@@ -37,7 +37,7 @@ endif
 
 # Support newer `docker compose` syntax in addition to `docker-compose`
 
-ifeq (, $(shell which docker-compose))
+ifeq (, $(shell which docker compose))
   DOCKER_COMPOSE_COMMAND := docker compose
   $(info Using docker compose V2 (docker compose))
 else
