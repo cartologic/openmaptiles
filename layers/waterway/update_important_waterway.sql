@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS osm_important_waterway_linestring (
     source_ids bigint[],
     name varchar,
     name_en varchar,
-    name_de varchar,
+    name_ar varchar,
     tags hstore
 );
 
@@ -57,7 +57,7 @@ TRUNCATE osm_important_waterway_linestring_source_ids;
 -- etldoc: osm_waterway_linestring ->  osm_important_waterway_linestring
 -- Merge LineStrings from osm_waterway_linestring by grouping them and creating intersecting
 -- clusters of each group via ST_ClusterDBSCAN
-INSERT INTO osm_important_waterway_linestring (geometry, source_ids, name, name_en, name_de, tags)
+INSERT INTO osm_important_waterway_linestring (geometry, source_ids, name, name_en, name_ar, tags)
 SELECT (ST_Dump(ST_LineMerge(ST_Union(geometry)))).geom AS geometry,
        -- We use St_Union instead of St_Collect to ensure no overlapping points exist within the geometries
        -- to merge. https://postgis.net/docs/ST_Union.html
@@ -69,23 +69,23 @@ SELECT (ST_Dump(ST_LineMerge(ST_Union(geometry)))).geom AS geometry,
        array_agg(osm_id) as source_ids,
        name,
        name_en,
-       name_de,
+       name_ar,
        slice_language_tags(tags) AS tags
 FROM (
     SELECT *,
            -- Get intersecting clusters by setting minimum distance to 0 and minimum intersecting points to 1.
            -- https://postgis.net/docs/ST_ClusterDBSCAN.html
            ST_ClusterDBSCAN(geometry, 0, 1) OVER (
-               PARTITION BY name, name_en, name_de, slice_language_tags(tags)
+               PARTITION BY name, name_en, name_ar, slice_language_tags(tags)
            ) AS cluster,
            -- ST_ClusterDBSCAN returns an increasing integer as the cluster-ids within each partition starting at 0.
            -- This leads to clusters having the same ID across multiple partitions therefore we generate a
            -- Cluster-Group-ID by utilizing the DENSE_RANK function sorted over the partition columns.
-           DENSE_RANK() OVER (ORDER BY name, name_en, name_de, slice_language_tags(tags)) as cluster_group
+           DENSE_RANK() OVER (ORDER BY name, name_en, name_ar, slice_language_tags(tags)) as cluster_group
     FROM osm_waterway_linestring
     WHERE name <> '' AND waterway = 'river' AND ST_IsValid(geometry)
 ) q
-GROUP BY cluster_group, cluster, name, name_en, name_de, slice_language_tags(tags);
+GROUP BY cluster_group, cluster, name, name_en, name_ar, slice_language_tags(tags);
 
 -- Geometry Index
 CREATE INDEX IF NOT EXISTS osm_important_waterway_linestring_geometry_idx
@@ -185,12 +185,12 @@ BEGIN
     );
 
     -- etldoc: osm_important_waterway_linestring -> osm_important_waterway_linestring_gen_z11
-    INSERT INTO osm_important_waterway_linestring_gen_z11 (geometry, id, name, name_en, name_de, tags)
+    INSERT INTO osm_important_waterway_linestring_gen_z11 (geometry, id, name, name_en, name_ar, tags)
     SELECT ST_Simplify(geometry, ZRes(12)) AS geometry,
         id,
         name,
         name_en,
-        name_de,
+        name_ar,
         tags
     FROM osm_important_waterway_linestring
     WHERE (
@@ -203,7 +203,7 @@ BEGIN
         )
     ) AND ST_Length(geometry) > 1000
     ON CONFLICT (id) DO UPDATE SET geometry = excluded.geometry, name = excluded.name, name_en = excluded.name_en,
-                                   name_de = excluded.name_de, tags = excluded.tags;
+                                   name_ar = excluded.name_ar, tags = excluded.tags;
 
     -- Analyze source table
     ANALYZE osm_important_waterway_linestring_gen_z11;
@@ -217,12 +217,12 @@ BEGIN
     );
 
     -- etldoc: osm_important_waterway_linestring_gen_z11 -> osm_important_waterway_linestring_gen_z10
-    INSERT INTO osm_important_waterway_linestring_gen_z10 (geometry, id, name, name_en, name_de, tags)
+    INSERT INTO osm_important_waterway_linestring_gen_z10 (geometry, id, name, name_en, name_ar, tags)
     SELECT ST_Simplify(geometry, ZRes(11)) AS geometry,
         id,
         name,
         name_en,
-        name_de,
+        name_ar,
         tags
     FROM osm_important_waterway_linestring_gen_z11
     WHERE (
@@ -235,7 +235,7 @@ BEGIN
         )
     ) AND ST_Length(geometry) > 4000
     ON CONFLICT (id) DO UPDATE SET geometry = excluded.geometry, name = excluded.name, name_en = excluded.name_en,
-                                   name_de = excluded.name_de, tags = excluded.tags;
+                                   name_ar = excluded.name_ar, tags = excluded.tags;
 
     -- Analyze source table
     ANALYZE osm_important_waterway_linestring_gen_z10;
@@ -249,12 +249,12 @@ BEGIN
     );
 
     -- etldoc: osm_important_waterway_linestring_gen_z10 -> osm_important_waterway_linestring_gen_z9
-    INSERT INTO osm_important_waterway_linestring_gen_z9 (geometry, id, name, name_en, name_de, tags)
+    INSERT INTO osm_important_waterway_linestring_gen_z9 (geometry, id, name, name_en, name_ar, tags)
     SELECT ST_Simplify(geometry, ZRes(10)) AS geometry,
         id,
         name,
         name_en,
-        name_de,
+        name_ar,
         tags
     FROM osm_important_waterway_linestring_gen_z10
     WHERE (
@@ -267,7 +267,7 @@ BEGIN
         )
     ) AND ST_Length(geometry) > 8000
     ON CONFLICT (id) DO UPDATE SET geometry = excluded.geometry, name = excluded.name, name_en = excluded.name_en,
-                                   name_de = excluded.name_de, tags = excluded.tags;
+                                   name_ar = excluded.name_ar, tags = excluded.tags;
 
     -- noinspection SqlWithoutWhere
     DELETE FROM waterway_important.changes_z9_z10_z11;
@@ -409,7 +409,7 @@ BEGIN
     -- Create a table containing all LineStrings which should be merged
     CREATE TEMPORARY TABLE linestrings_to_merge AS
     -- Add all Source-LineStrings affected by this update
-    SELECT osm_id, NULL::INTEGER AS id, NULL::BIGINT[] AS source_ids, geometry, name, name_en, name_de,
+    SELECT osm_id, NULL::INTEGER AS id, NULL::BIGINT[] AS source_ids, geometry, name, name_en, name_ar,
            slice_language_tags(tags) as tags
     -- Table containing the IDs of all Source-LineStrings affected by this update
     FROM (
@@ -437,7 +437,7 @@ BEGIN
            ARRAY(
                SELECT s.source_id FROM osm_important_waterway_linestring_source_ids s WHERE s.id = m.id
            )::BIGINT[] AS source_ids,
-           m.geometry, m.name, m.name_en, m.name_de, m.tags
+           m.geometry, m.name, m.name_en, m.name_ar, m.tags
     FROM linestrings_to_merge
     JOIN osm_important_waterway_linestring m ON (ST_Intersects(linestrings_to_merge.geometry, m.geometry));
 
@@ -462,11 +462,11 @@ BEGIN
     SELECT *,
            -- Get intersecting clusters by setting minimum distance to 0 and minimum intersecting points to 1.
            -- https://postgis.net/docs/ST_ClusterDBSCAN.html
-           ST_ClusterDBSCAN(geometry, 0, 1) OVER (PARTITION BY name, name_en, name_de, tags) AS cluster,
+           ST_ClusterDBSCAN(geometry, 0, 1) OVER (PARTITION BY name, name_en, name_ar, tags) AS cluster,
            -- ST_ClusterDBSCAN returns an increasing integer as the cluster-ids within each partition starting at 0.
            -- This leads to clusters having the same ID across multiple partitions therefore we generate a
            -- Cluster-Group-ID by utilizing the DENSE_RANK function sorted over the partition columns.
-           DENSE_RANK() OVER (ORDER BY name, name_en, name_de, tags) as cluster_group
+           DENSE_RANK() OVER (ORDER BY name, name_en, name_ar, tags) as cluster_group
     FROM linestrings_to_merge;
 
     -- Drop temporary tables early to save resources
@@ -483,7 +483,7 @@ BEGIN
 
     WITH inserted_linestrings AS (
         -- Merge LineStrings of each cluster and insert them
-        INSERT INTO osm_important_waterway_linestring (geometry, new_source_ids, old_source_ids, name, name_en, name_de,
+        INSERT INTO osm_important_waterway_linestring (geometry, new_source_ids, old_source_ids, name, name_en, name_ar,
                                                        tags)
         SELECT (ST_Dump(ST_LineMerge(ST_Union(geometry)))).geom AS geometry,
                -- We use St_Union instead of St_Collect to ensure no overlapping points exist within the geometries
@@ -497,10 +497,10 @@ BEGIN
                array_cat_agg(source_ids)::BIGINT[] as old_source_ids,
                name,
                name_en,
-               name_de,
+               name_ar,
                tags
         FROM clustered_linestrings_to_merge
-        GROUP BY cluster_group, cluster, name, name_en, name_de, tags
+        GROUP BY cluster_group, cluster, name, name_en, name_ar, tags
         RETURNING id, new_source_ids, old_source_ids, geometry
     )
     -- Store OSM-IDs of Source-LineStrings by intersecting Merged-LineStrings with their sources.

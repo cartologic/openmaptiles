@@ -47,7 +47,7 @@ fi
 
 if [ $# -eq 0 ]; then
   #  default test area
-  export area=albania
+  export area=gcc-states
   echo "No parameter - set area=$area "
 else
   export area=$1

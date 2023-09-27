@@ -2,13 +2,13 @@
 
 # A script to run the "integrity" continuous integration script.
 
-area=monaco
+area=gcc-states
 echo MIN_ZOOM=0 >> .env
 echo MAX_ZOOM=14 >> .env
 ./quickstart.sh $area
 export TEST_MODE=yes
 make generate-devdoc
-area=europe/monaco
+area=asia/gcc-states
 echo DIFF_MODE=true >> .env
 
 # Cleanup

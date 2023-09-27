@@ -4,22 +4,20 @@ name: OpenMapTiles Integrity CI
 
 on:
   push:
-    branches: [ master, master-tools ]
+    branches: [master, master-tools]
   pull_request:
 
 jobs:
-
   integrity_test:
     name: Run integrity test
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout the changes
         uses: actions/checkout@v2
 
       - name: Run quickstart for a small area
         env:
-          area: monaco
+          area: gcc-states
           QUIET: 1
         run: |
           echo MIN_ZOOM=0 >> .env
@@ -39,7 +37,7 @@ jobs:
 
       - name: Run quickstart and update in DIFF mode
         env:
-          area: europe/monaco
+          area: asia/gcc-states
           QUIET: 1
         run: |
           echo MIN_ZOOM=0 >> .env
